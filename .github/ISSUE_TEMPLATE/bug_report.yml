@@ -1,0 +1,33 @@
+name: Bug report
+description: Report a reproducible problem with the app
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Do not include Cursor tokens, cookies, database files, or unredacted account information.
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: macOS 15.6
+    validations:
+      required: true
+  - type: input
+    id: cursor
+    attributes:
+      label: Cursor version
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Include expected behavior and reproduction steps.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Redacted diagnostics
+      description: Remove all tokens, cookies, IDs, and personal information.

@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: macos-14
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run parser tests
+        run: ./scripts/test.sh
+
+      - name: Build universal app
+        env:
+          OUT_DIR: ${{ runner.temp }}/release
+        run: ./scripts/build.sh
+
+      - name: Verify bundle and architectures
+        env:
+          APP_PATH: ${{ runner.temp }}/release/Grok Usage Menu Bar.app
+        run: |
+          codesign --verify --deep --strict "$APP_PATH"
+          lipo -verify_arch arm64 x86_64 "$APP_PATH/Contents/MacOS/GrokUsageMenuBar"
