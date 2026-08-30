@@ -14,7 +14,7 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Run parser tests
         run: ./scripts/test.sh
@@ -29,4 +29,5 @@ jobs:
           APP_PATH: ${{ runner.temp }}/release/Grok Usage Menu Bar.app
         run: |
           codesign --verify --deep --strict "$APP_PATH"
-          lipo -verify_arch arm64 x86_64 "$APP_PATH/Contents/MacOS/GrokUsageMenuBar"
+          lipo "$APP_PATH/Contents/MacOS/GrokUsageMenuBar" -verify_arch arm64
+          lipo "$APP_PATH/Contents/MacOS/GrokUsageMenuBar" -verify_arch x86_64
