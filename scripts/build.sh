@@ -20,6 +20,7 @@ env CLANG_MODULE_CACHE_PATH="$STAGING_ROOT/module-cache" \
   clang \
   "$ROOT_DIR/Sources/GrokUsageMenuBar/main.m" \
   "$ROOT_DIR/Sources/GrokUsageMenuBar/GrokUsageParser.m" \
+  "$ROOT_DIR/Sources/GrokUsageMenuBar/GrokUsageFormatter.m" \
   -I "$ROOT_DIR/Sources/GrokUsageMenuBar" \
   -arch arm64 -arch x86_64 \
   -mmacosx-version-min=13.0 \
