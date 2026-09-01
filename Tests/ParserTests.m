@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 #import "GrokUsageParser.h"
+#import "GrokUsageFormatter.h"
 #import <math.h>
 
 static void Assert(BOOL condition, NSString *message) {
@@ -37,7 +38,14 @@ int main(void) {
         NSDictionary *remoteError = GrokUsageStateFromData(JSON(@"{\"error\":\"Invalid origin\"}"), fetched, &error);
         Assert(remoteError == nil && [error.localizedDescription isEqualToString:@"Invalid origin"], @"server error should be surfaced");
 
-        puts("Parser tests passed");
+        Assert([GrokCountdownTextForInterval(31 * 3600 + 29 * 60 + 25)
+                isEqualToString:@"1d 07:29:25"], @"multi-day countdown should separate days");
+        Assert([GrokCountdownTextForInterval(7 * 3600 + 5)
+                isEqualToString:@"7:00:05"], @"sub-day countdown should keep the compact format");
+        Assert([GrokCountdownTextForInterval(-1)
+                isEqualToString:@"0:00:00"], @"expired countdown should clamp to zero");
+
+        puts("Parser and formatter tests passed");
     }
     return 0;
 }
