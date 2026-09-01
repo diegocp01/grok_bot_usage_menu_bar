@@ -3,7 +3,6 @@
 #import <sqlite3.h>
 #import <math.h>
 #import "GrokUsageParser.h"
-#import "GrokUsageFormatter.h"
 
 static NSString * const DisplayModeKey = @"displayMode";
 static NSString * const DisplayModePercent = @"percent";
@@ -312,7 +311,11 @@ static NSTimeInterval const DefaultRefreshIntervalSeconds = 60.0;
     if (![reset respondsToSelector:@selector(doubleValue)]) {
         return nil;
     }
-    return GrokCountdownTextForInterval(reset.doubleValue - NSDate.date.timeIntervalSince1970);
+    NSInteger remaining = MAX(0, (NSInteger)floor(reset.doubleValue - NSDate.date.timeIntervalSince1970));
+    NSInteger hours = remaining / 3600;
+    NSInteger minutes = (remaining % 3600) / 60;
+    NSInteger seconds = remaining % 60;
+    return [NSString stringWithFormat:@"%ld:%02ld:%02ld", (long)hours, (long)minutes, (long)seconds];
 }
 
 - (NSString *)resetClockText:(NSDictionary *)state {

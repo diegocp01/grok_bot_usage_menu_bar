@@ -9,7 +9,6 @@ env CLANG_MODULE_CACHE_PATH="$ROOT_DIR/.build/module-cache" \
   clang \
   "$ROOT_DIR/Tests/ParserTests.m" \
   "$ROOT_DIR/Sources/GrokUsageMenuBar/GrokUsageParser.m" \
-  "$ROOT_DIR/Sources/GrokUsageMenuBar/GrokUsageFormatter.m" \
   -I "$ROOT_DIR/Sources/GrokUsageMenuBar" \
   -fobjc-arc \
   -framework Foundation \
