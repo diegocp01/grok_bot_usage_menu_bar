@@ -14,7 +14,7 @@ The default layout matches the companion Codex widget: a monochrome Grok icon, a
 - Percentage left or used
 - Live countdown or reset clock time
 - Refresh every 30 seconds, 1 minute, 3 minutes, or 5 minutes
-- Launch at Login using macOS `SMAppService`
+- Launch at Login enabled automatically using macOS `SMAppService`
 - One-click access to the Cursor dashboard
 - Universal Apple Silicon and Intel build
 - No third-party runtime or package dependencies
@@ -43,7 +43,7 @@ Complete the installation for me on this Mac and verify that it works. Follow th
 4. Run ./scripts/test.sh and build the app. Use the built app's --probe command to test the live usage request; its output is intentionally sanitized.
 5. If the credential store is missing or the login has expired, check whether Cursor.app is installed. If needed, download the current macOS version only from https://cursor.com/download, install and open it, then ask me to complete the Cursor sign-in myself. Never ask me to paste a password, two-factor code, cookie, or access token into Codex or Terminal. After I confirm sign-in, retry the sanitized probe.
 6. Do not continue with a broken or unauthenticated probe. Explain the safe next action instead.
-7. When the probe succeeds, run the repository's installer, verify the installed app's strict code signature and universal arm64/x86_64 binary, open it, and confirm that the menu-bar item shows real usage with a reset time rather than --:--.
+7. When the probe succeeds, run the repository's installer, verify the installed app's strict code signature and universal arm64/x86_64 binary, confirm Launch at Login is enabled, open it, and confirm that the menu-bar item shows real usage with a reset time rather than --:--.
 8. Report the final installation path and what was verified. Do not uninstall Cursor or delete its local data unless I explicitly ask.
 ```
 
@@ -51,7 +51,7 @@ Codex Computer Use is only needed if Codex must operate the download or open Cur
 
 ## Install from source
 
-Double-click **Install Grok Usage Menu Bar.command**. It builds the app, installs it in `~/Applications`, verifies the local code signature, and opens it.
+Double-click **Install Grok Usage Menu Bar.command**. It builds the app, installs it in `~/Applications`, verifies the local code signature, opens it, and enables Launch at Login automatically. macOS may show a background-item notification; if it requires approval, enable **Grok Usage Menu Bar** in **System Settings → General → Login Items**.
 
 Or use the terminal:
 
@@ -94,7 +94,7 @@ The endpoint's camelCase and snake_case response shapes were independently verif
 
 ## Uninstall
 
-Quit the app and move `~/Applications/Grok Usage Menu Bar.app` to the Trash. If Launch at Login is enabled, turn it off from the app menu first.
+Quit the app and move `~/Applications/Grok Usage Menu Bar.app` to the Trash. Turn off **Launch at Login** from the app menu first so macOS removes its startup registration.
 
 ## Disclaimer
 

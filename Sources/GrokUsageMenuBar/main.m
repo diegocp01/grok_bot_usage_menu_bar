@@ -14,6 +14,7 @@ static NSString * const MetricModeKey = @"metricMode";
 static NSString * const MetricModeLeft = @"left";
 static NSString * const MetricModeUsed = @"used";
 static NSString * const RefreshIntervalKey = @"refreshIntervalSeconds";
+static NSString * const LaunchAtLoginPreferenceKey = @"launchAtLoginPreference";
 static NSTimeInterval const DefaultRefreshIntervalSeconds = 60.0;
 
 @interface AppDelegate : NSObject <NSApplicationDelegate, NSMenuDelegate>
@@ -35,8 +36,11 @@ static NSTimeInterval const DefaultRefreshIntervalSeconds = 60.0;
         DisplayModeKey: DisplayModeBattery,
         TimeModeKey: TimeModeCountdown,
         MetricModeKey: MetricModeLeft,
-        RefreshIntervalKey: @(DefaultRefreshIntervalSeconds)
+        RefreshIntervalKey: @(DefaultRefreshIntervalSeconds),
+        LaunchAtLoginPreferenceKey: @YES
     }];
+
+    [self ensureLaunchAtLoginIfPreferred];
 
     self.grokIcon = [self makeGrokIcon];
     self.statusItem = [NSStatusBar.systemStatusBar statusItemWithLength:NSVariableStatusItemLength];
@@ -572,12 +576,54 @@ static NSTimeInterval const DefaultRefreshIntervalSeconds = 60.0;
     return NO;
 }
 
+- (NSString *)launchAtLoginStatusText {
+    if (@available(macOS 13.0, *)) {
+        switch (SMAppService.mainAppService.status) {
+            case SMAppServiceStatusEnabled:
+                return @"enabled";
+            case SMAppServiceStatusRequiresApproval:
+                return @"requires_approval";
+            case SMAppServiceStatusNotFound:
+                return @"not_found";
+            case SMAppServiceStatusNotRegistered:
+            default:
+                return @"not_registered";
+        }
+    }
+    return @"unsupported";
+}
+
+- (void)ensureLaunchAtLoginIfPreferred {
+    if (@available(macOS 13.0, *)) {
+        if (![NSUserDefaults.standardUserDefaults boolForKey:LaunchAtLoginPreferenceKey]) return;
+
+        SMAppService *service = SMAppService.mainAppService;
+        if (service.status == SMAppServiceStatusEnabled) {
+            self.launchAtLoginError = nil;
+            return;
+        }
+        if (service.status == SMAppServiceStatusRequiresApproval) {
+            self.launchAtLoginError = @"approval required in System Settings > General > Login Items";
+            return;
+        }
+
+        NSError *error = nil;
+        BOOL ok = [service registerAndReturnError:&error];
+        self.launchAtLoginError = ok ? nil : error.localizedDescription;
+    }
+}
+
 - (void)toggleLaunchAtLogin {
     if (@available(macOS 13.0, *)) {
         NSError *error = nil;
         SMAppService *service = SMAppService.mainAppService;
-        BOOL ok = [self launchAtLoginEnabled] ? [service unregisterAndReturnError:&error]
-                                               : [service registerAndReturnError:&error];
+        BOOL wasEnabled = [self launchAtLoginEnabled];
+        BOOL ok = wasEnabled ? [service unregisterAndReturnError:&error]
+                             : [service registerAndReturnError:&error];
+        if (ok) {
+            [NSUserDefaults.standardUserDefaults setBool:!wasEnabled
+                                                   forKey:LaunchAtLoginPreferenceKey];
+        }
         self.launchAtLoginError = ok ? nil : error.localizedDescription;
         self.statusItem.menu = [self menuForCurrentState];
     }
@@ -604,6 +650,12 @@ int main(int argc, const char *argv[]) {
                 fputc('\n', stdout);
             }
             return [state[@"ok"] boolValue] ? 0 : 1;
+        }
+        if (argc > 1 && strcmp(argv[1], "--launch-at-login-status") == 0) {
+            AppDelegate *statusDelegate = [[AppDelegate alloc] init];
+            NSString *status = [statusDelegate launchAtLoginStatusText];
+            puts(status.UTF8String);
+            return [status isEqualToString:@"enabled"] ? 0 : 1;
         }
         if (argc > 2 && strcmp(argv[1], "--render-preview") == 0) {
             AppDelegate *previewDelegate = [[AppDelegate alloc] init];

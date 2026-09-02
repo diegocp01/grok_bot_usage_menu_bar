@@ -17,6 +17,15 @@ xattr -cr "$DESTINATION" 2>/dev/null || true
 codesign --force --sign - --options runtime "$DESTINATION" >/dev/null
 codesign --verify --deep --strict "$DESTINATION"
 open "$DESTINATION"
+sleep 1
+
+LOGIN_STATUS="$("$DESTINATION/Contents/MacOS/GrokUsageMenuBar" --launch-at-login-status 2>/dev/null || true)"
 
 echo "Installed and opened:"
 echo "$DESTINATION"
+if [[ "$LOGIN_STATUS" == "enabled" ]]; then
+  echo "Launch at Login: enabled"
+else
+  echo "Launch at Login: $LOGIN_STATUS"
+  echo "If approval is required, enable Grok Usage Menu Bar in System Settings > General > Login Items."
+fi
