@@ -1,3 +1,4 @@
+#import "PersistentStartup.h"
 #import <Cocoa/Cocoa.h>
 #import <ServiceManagement/ServiceManagement.h>
 #import <sqlite3.h>
@@ -226,7 +227,7 @@ static NSTimeInterval const DefaultRefreshIntervalSeconds = 60.0;
     [menu addItem:NSMenuItem.separatorItem];
     [self addRefreshIntervalSubmenu:menu];
     [menu addItem:NSMenuItem.separatorItem];
-    [self addChoice:@"Launch at Login" selector:@selector(toggleLaunchAtLogin)
+    [self addChoice:@"Launch at Login & Keep Running" selector:@selector(toggleLaunchAtLogin)
              active:[self launchAtLoginEnabled] menu:menu];
 
     [menu addItem:NSMenuItem.separatorItem];
@@ -569,64 +570,34 @@ static NSTimeInterval const DefaultRefreshIntervalSeconds = 60.0;
     self.statusItem.menu = [self menuForCurrentState];
 }
 
+- (PersistentStartup *)startup {
+    return StartupController(@"com.local.autostart.grok-usage");
+}
+
 - (BOOL)launchAtLoginEnabled {
-    if (@available(macOS 13.0, *)) {
-        return SMAppService.mainAppService.status == SMAppServiceStatusEnabled;
-    }
-    return NO;
+    return [NSFileManager.defaultManager fileExistsAtPath:self.startup.path] && self.startup.loaded;
 }
 
 - (NSString *)launchAtLoginStatusText {
-    if (@available(macOS 13.0, *)) {
-        switch (SMAppService.mainAppService.status) {
-            case SMAppServiceStatusEnabled:
-                return @"enabled";
-            case SMAppServiceStatusRequiresApproval:
-                return @"requires_approval";
-            case SMAppServiceStatusNotFound:
-                return @"not_found";
-            case SMAppServiceStatusNotRegistered:
-            default:
-                return @"not_registered";
-        }
-    }
-    return @"unsupported";
+    if ([self launchAtLoginEnabled]) return @"enabled";
+    return [NSFileManager.defaultManager fileExistsAtPath:self.startup.path] ? @"inactive" : @"not_registered";
 }
 
 - (void)ensureLaunchAtLoginIfPreferred {
-    if (@available(macOS 13.0, *)) {
-        if (![NSUserDefaults.standardUserDefaults boolForKey:LaunchAtLoginPreferenceKey]) return;
-
-        SMAppService *service = SMAppService.mainAppService;
-        if (service.status == SMAppServiceStatusEnabled) {
-            self.launchAtLoginError = nil;
-            return;
-        }
-        if (service.status == SMAppServiceStatusRequiresApproval) {
-            self.launchAtLoginError = @"approval required in System Settings > General > Login Items";
-            return;
-        }
-
-        NSError *error = nil;
-        BOOL ok = [service registerAndReturnError:&error];
-        self.launchAtLoginError = ok ? nil : error.localizedDescription;
-    }
+    NSError *error = nil;
+    BOOL preferred = [NSUserDefaults.standardUserDefaults boolForKey:LaunchAtLoginPreferenceKey];
+    BOOL ok = RemoveNativeLoginItem(&error) && [self.startup setEnabled:preferred error:&error];
+    self.launchAtLoginError = ok ? nil : error.localizedDescription;
 }
 
 - (void)toggleLaunchAtLogin {
-    if (@available(macOS 13.0, *)) {
-        NSError *error = nil;
-        SMAppService *service = SMAppService.mainAppService;
-        BOOL wasEnabled = [self launchAtLoginEnabled];
-        BOOL ok = wasEnabled ? [service unregisterAndReturnError:&error]
-                             : [service registerAndReturnError:&error];
-        if (ok) {
-            [NSUserDefaults.standardUserDefaults setBool:!wasEnabled
-                                                   forKey:LaunchAtLoginPreferenceKey];
-        }
-        self.launchAtLoginError = ok ? nil : error.localizedDescription;
-        self.statusItem.menu = [self menuForCurrentState];
-    }
+    NSError *error = nil;
+    // A pending/blocked registration can also be turned off.
+    BOOL wasPreferred = [NSUserDefaults.standardUserDefaults boolForKey:LaunchAtLoginPreferenceKey];
+    BOOL ok = RemoveNativeLoginItem(&error) && [self.startup setEnabled:!wasPreferred error:&error];
+    if (ok) [NSUserDefaults.standardUserDefaults setBool:!wasPreferred forKey:LaunchAtLoginPreferenceKey];
+    self.launchAtLoginError = ok ? nil : error.localizedDescription;
+    self.statusItem.menu = [self menuForCurrentState];
 }
 
 - (void)openDashboard {
@@ -641,6 +612,12 @@ static NSTimeInterval const DefaultRefreshIntervalSeconds = 60.0;
 
 int main(int argc, const char *argv[]) {
     @autoreleasepool {
+        if (argc > 1 && strcmp(argv[1], "--pause-startup") == 0) {
+            NSError *error = nil;
+            BOOL ok = [StartupController(@"com.local.autostart.grok-usage") pause:&error];
+            if (!ok) fprintf(stderr, "%s\n", error.localizedDescription.UTF8String);
+            return ok ? 0 : 1;
+        }
         if (argc > 1 && strcmp(argv[1], "--probe") == 0) {
             AppDelegate *probeDelegate = [[AppDelegate alloc] init];
             NSDictionary *state = [probeDelegate loadUsageState];

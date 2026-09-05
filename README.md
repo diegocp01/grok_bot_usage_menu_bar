@@ -14,7 +14,6 @@ The default layout matches the companion Codex widget: a monochrome Grok icon, a
 - Percentage left or used
 - Live countdown or reset clock time
 - Refresh every 30 seconds, 1 minute, 3 minutes, or 5 minutes
-- Launch at Login enabled automatically using macOS `SMAppService`
 - One-click access to the Cursor dashboard
 - Universal Apple Silicon and Intel build
 - No third-party runtime or package dependencies
@@ -51,7 +50,6 @@ Codex Computer Use is only needed if Codex must operate the download or open Cur
 
 ## Install from source
 
-Double-click **Install Grok Usage Menu Bar.command**. It builds the app, installs it in `~/Applications`, verifies the local code signature, opens it, and enables Launch at Login automatically. macOS may show a background-item notification; if it requires approval, enable **Grok Usage Menu Bar** in **System Settings → General → Login Items**.
 
 Or use the terminal:
 
@@ -94,7 +92,6 @@ The endpoint's camelCase and snake_case response shapes were independently verif
 
 ## Uninstall
 
-Quit the app and move `~/Applications/Grok Usage Menu Bar.app` to the Trash. Turn off **Launch at Login** from the app menu first so macOS removes its startup registration.
 
 ## Disclaimer
 
@@ -103,3 +100,26 @@ This is an independent, unofficial project. It is not affiliated with or endorse
 ## License
 
 [MIT](LICENSE)
+
+## Persistent menu-bar startup
+
+On first launch, the app installs a per-user LaunchAgent that starts it after login
+(including after a restart) and reopens it if it exits. It uses `open -g -W` so
+macOS launches the normal app bundle without creating duplicate instances, with
+a 30-second throttle to avoid a tight restart loop. No administrator access is needed.
+An existing saved opt-out is preserved. Older native login registrations are removed
+when migrating to this single startup mechanism.
+
+**Quit will reopen the app while this option is enabled.** Turn off
+**Launch at Login & Keep Running** in the app menu before quitting to keep it closed.
+Registration failures are shown in the menu. If macOS blocks a background item,
+allow the app in **System Settings → General → Login Items**, then toggle the option
+off and on. macOS approval and a logged-in graphical session are required; startup
+cannot put an icon on the login screen. Install the app in its final location before
+opening it, and open it again after moving it to update the saved path.
+
+Install/update scripts pause the restart job before replacing the app. The next normal
+launch resumes it if enabled. To remove the app, disable the menu option first.
+
+Run `./scripts/test-startup.sh` for isolated startup lifecycle tests. These use a
+fake launchctl runner and temporary paths; they never alter your login items.
