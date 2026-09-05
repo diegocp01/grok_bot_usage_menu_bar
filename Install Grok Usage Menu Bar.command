@@ -10,6 +10,7 @@ SOURCE_APP="$TEMP_BUILD/Grok Usage Menu Bar.app"
 DESTINATION="$HOME/Applications/Grok Usage Menu Bar.app"
 
 mkdir -p "$HOME/Applications"
+"$SOURCE_APP/Contents/MacOS/GrokUsageMenuBar" --pause-startup
 pkill -x GrokUsageMenuBar >/dev/null 2>&1 || true
 rm -rf "$DESTINATION"
 ditto --noqtn "$SOURCE_APP" "$DESTINATION"
