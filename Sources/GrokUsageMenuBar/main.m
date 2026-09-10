@@ -3,6 +3,7 @@
 #import <ServiceManagement/ServiceManagement.h>
 #import <sqlite3.h>
 #import <math.h>
+#import "BatteryRenderer.h"
 #import "GrokUsageParser.h"
 
 static NSString * const DisplayModeKey = @"displayMode";
@@ -93,32 +94,7 @@ static NSTimeInterval const DefaultRefreshIntervalSeconds = 60.0;
 }
 
 - (NSImage *)batteryIconForPercent:(double)percent {
-    double clamped = MAX(0.0, MIN(100.0, percent));
-    NSImage *image = [[NSImage alloc] initWithSize:NSMakeSize(67.0, 18.0)];
-    [image lockFocus];
-
-    [NSColor.blackColor set];
-    [self.grokIcon drawInRect:NSMakeRect(0.0, 0.0, 18.0, 18.0)];
-
-    NSRect body = NSMakeRect(25.0, 2.5, 35.0, 13.0);
-    NSBezierPath *outline = [NSBezierPath bezierPathWithRoundedRect:body xRadius:2.3 yRadius:2.3];
-    outline.lineWidth = 1.5;
-    [outline stroke];
-
-    NSRect nub = NSMakeRect(NSMaxX(body) + 1.2, 6.25, 2.2, 5.5);
-    [[NSBezierPath bezierPathWithRoundedRect:nub xRadius:0.8 yRadius:0.8] fill];
-
-    CGFloat available = body.size.width - 4.0;
-    CGFloat fillWidth = available * (clamped / 100.0);
-    if (fillWidth > 0.5) {
-        NSRect fill = NSMakeRect(body.origin.x + 2.0, body.origin.y + 2.0,
-                                 fillWidth, body.size.height - 4.0);
-        [[NSBezierPath bezierPathWithRoundedRect:fill xRadius:1.1 yRadius:1.1] fill];
-    }
-
-    [image unlockFocus];
-    image.template = YES;
-    return image;
+    return GrokBatteryIcon(self.grokIcon, percent);
 }
 
 - (BOOL)renderPreviewAtPath:(NSString *)path error:(NSError **)error {

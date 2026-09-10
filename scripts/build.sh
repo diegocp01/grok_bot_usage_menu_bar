@@ -19,6 +19,7 @@ mkdir -p "$MACOS_DIR" "$STAGING_ROOT/module-cache"
 env CLANG_MODULE_CACHE_PATH="$STAGING_ROOT/module-cache" \
   clang \
   "$ROOT_DIR/Sources/GrokUsageMenuBar/main.m" \
+  "$ROOT_DIR/Sources/GrokUsageMenuBar/BatteryRenderer.m" \
   "$ROOT_DIR/Sources/GrokUsageMenuBar/GrokUsageParser.m" \
   -I "$ROOT_DIR/Sources/GrokUsageMenuBar" \
   -arch arm64 -arch x86_64 \
