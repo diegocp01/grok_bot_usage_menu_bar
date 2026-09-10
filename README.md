@@ -3,15 +3,22 @@
 A tiny native macOS menu-bar app that shows how much of your weekly Cursor **Grok Bot** allowance remains and when it resets.
 
 <p>
-  <img src="assets/menu-bar-preview.png" alt="Grok Usage Menu Bar showing a battery and reset countdown" width="280">
+  <img src="assets/menu-bar-preview.png" alt="Grok Usage Menu Bar showing 93 percent left, a green on-pace marker, and a reset countdown" width="280">
 </p>
 
-The default layout matches the companion Codex widget: a monochrome Grok icon, a battery showing usage left, and a live countdown to the weekly reset. The icon is a macOS template image, so it automatically follows the menu bar's light or dark appearance.
+The default layout matches the companion Codex widget: a Grok icon, a battery showing usage left, and a live countdown to the weekly reset. It follows both light and dark menu-bar appearances.
+
+The subtle green line inside the battery is the **on-pace marker**. It shows how much quota would remain if usage were spread evenly across the selected window:
+
+`on-pace % left = (time until reset / window duration) × 100`
+
+The app uses Cursor's real period start and reset timestamps—not an assumed seven-day duration—so the marker remains accurate for shortened or extended windows. If the battery fill ends to the right of the line, more quota remains than an even pace would predict. The marker appears only with **Show Battery** + **Show % Left**; the percentage is always drawn above it so the number stays readable.
 
 ## Features
 
 - Battery or percentage display
 - Percentage left or used
+- On-pace marker based on the selected window's actual duration
 - Live countdown or reset clock time
 - Refresh every 30 seconds, 1 minute, 3 minutes, or 5 minutes
 - One-click access to the Cursor dashboard
