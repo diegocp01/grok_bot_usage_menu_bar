@@ -15,3 +15,14 @@ env CLANG_MODULE_CACHE_PATH="$ROOT_DIR/.build/module-cache" \
   -o "$TEST_DIR/ParserTests"
 
 "$TEST_DIR/ParserTests"
+
+env CLANG_MODULE_CACHE_PATH="$ROOT_DIR/.build/module-cache" \
+  clang \
+  "$ROOT_DIR/Tests/BatteryRendererTests.m" \
+  "$ROOT_DIR/Sources/GrokUsageMenuBar/BatteryRenderer.m" \
+  -I "$ROOT_DIR/Sources/GrokUsageMenuBar" \
+  -fobjc-arc \
+  -framework Cocoa \
+  -o "$TEST_DIR/BatteryRendererTests"
+
+"$TEST_DIR/BatteryRendererTests"
