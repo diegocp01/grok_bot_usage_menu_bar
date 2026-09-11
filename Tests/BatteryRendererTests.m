@@ -93,13 +93,13 @@ int main(void) {
         NSBitmapImageRep *softOutsideFillRep = BitmapForImage(
             GrokBatteryIconWithOnPaceLine(nil, 0.0, @"  ", 50.0));
         CGFloat softOutsideAlpha = AlphaAt(softOutsideFillRep, 42, 9);
-        Assert(softOutsideAlpha >= 0.60 && softOutsideAlpha <= 0.70,
-               @"marker softens to 65 percent opacity beneath the label outside the fill");
+        Assert(softOutsideAlpha >= 0.50 && softOutsideAlpha <= 0.60,
+               @"marker softens to 55 percent opacity beneath the label outside the fill");
 
         NSBitmapImageRep *softInsideFillRep = BitmapForImage(
             GrokBatteryIconWithOnPaceLine(nil, 100.0, @"  ", 50.0));
         CGFloat softInsideAlpha = AlphaAt(softInsideFillRep, 42, 9);
-        Assert(softInsideAlpha >= 0.30 && softInsideAlpha <= 0.40,
+        Assert(softInsideAlpha >= 0.40 && softInsideAlpha <= 0.50,
                @"marker softens its cutout beneath the label inside the fill");
 
         NSImage *sampleIcon = [[NSImage alloc] initWithSize:NSMakeSize(18.0, 18.0)];

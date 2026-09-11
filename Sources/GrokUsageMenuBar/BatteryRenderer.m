@@ -65,7 +65,7 @@ static NSImage *BatteryIcon(NSImage *grokIcon,
         BOOL passesUnderLabel = label.length > 0 &&
                                 NSMinX(marker) < NSMaxX(labelBounds) &&
                                 NSMaxX(marker) > NSMinX(labelBounds);
-        CGFloat markerOpacity = passesUnderLabel ? 0.65 : 1.0;
+        CGFloat markerOpacity = passesUnderLabel ? 0.55 : 1.0;
         [NSGraphicsContext saveGraphicsState];
         [[NSBezierPath bezierPathWithRoundedRect:interior xRadius:1.1 yRadius:1.1] addClip];
         [[NSColor colorWithCalibratedWhite:0.0 alpha:markerOpacity] setFill];
