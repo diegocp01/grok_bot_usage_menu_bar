@@ -45,6 +45,14 @@ static NSImage *BatteryIcon(NSImage *grokIcon,
         [fillPath fill];
     }
 
+    NSDictionary *attributes = @{
+        NSFontAttributeName: [NSFont monospacedDigitSystemFontOfSize:8.5 weight:NSFontWeightSemibold],
+        NSForegroundColorAttributeName: NSColor.blackColor
+    };
+    NSSize labelSize = [label sizeWithAttributes:attributes];
+    NSPoint labelPoint = NSMakePoint(NSMidX(body) - labelSize.width / 2.0,
+                                     NSMidY(body) - labelSize.height / 2.0 - 0.5);
+
     if (showsOnPaceLine) {
         CGFloat pace = MAX(0.0, MIN(100.0, onPacePercent));
         NSRect interior = NSMakeRect(body.origin.x + 2.0, body.origin.y + 2.0,
@@ -53,24 +61,23 @@ static NSImage *BatteryIcon(NSImage *grokIcon,
         markerX = MAX(NSMinX(interior) + 0.5, MIN(NSMaxX(interior) - 0.5, markerX));
         markerX = floor(markerX) + 0.5;
         NSRect marker = NSMakeRect(markerX - 0.5, NSMinY(interior), 1.0, NSHeight(interior));
+        NSRect labelBounds = NSMakeRect(labelPoint.x, labelPoint.y, labelSize.width, labelSize.height);
+        BOOL passesUnderLabel = label.length > 0 &&
+                                NSMinX(marker) < NSMaxX(labelBounds) &&
+                                NSMaxX(marker) > NSMinX(labelBounds);
+        CGFloat markerOpacity = passesUnderLabel ? 0.65 : 1.0;
         [NSGraphicsContext saveGraphicsState];
         [[NSBezierPath bezierPathWithRoundedRect:interior xRadius:1.1 yRadius:1.1] addClip];
-        [NSColor.blackColor setFill];
+        [[NSColor colorWithCalibratedWhite:0.0 alpha:markerOpacity] setFill];
         NSRectFill(marker);
         if (fillPath != nil) {
             [fillPath addClip];
             NSRectFillUsingOperation(marker, NSCompositingOperationClear);
+            [[NSColor colorWithCalibratedWhite:0.0 alpha:1.0 - markerOpacity] setFill];
+            NSRectFill(marker);
         }
         [NSGraphicsContext restoreGraphicsState];
     }
-
-    NSDictionary *attributes = @{
-        NSFontAttributeName: [NSFont monospacedDigitSystemFontOfSize:8.5 weight:NSFontWeightSemibold],
-        NSForegroundColorAttributeName: NSColor.blackColor
-    };
-    NSSize labelSize = [label sizeWithAttributes:attributes];
-    NSPoint labelPoint = NSMakePoint(NSMidX(body) - labelSize.width / 2.0,
-                                     NSMidY(body) - labelSize.height / 2.0 - 0.5);
 
     // Remove anything beneath the percentage before drawing its own contrast mask.
     // This keeps both the battery fill and the pace marker from crossing the glyphs.

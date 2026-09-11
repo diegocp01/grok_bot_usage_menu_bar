@@ -14,7 +14,7 @@ The slim line inside the battery is the **on-pace marker**. It shows how much qu
 
 The app uses Cursor's real period start and reset timestamps—not an assumed seven-day duration—so the marker remains accurate for shortened or extended windows. If the battery fill ends to the right of the line, more quota remains than an even pace would predict. The marker appears only with **Show Battery** + **Show % Left**.
 
-The marker follows the same contrast rule as the percentage. On a dark menu bar it is a dark cutout while it sits inside the battery fill and light while it sits in the empty area; light menu bars invert those colors automatically. The percentage is masked above both the fill and marker so it always stays readable.
+The marker follows the same contrast rule as the percentage. On a dark menu bar it is a dark cutout while it sits inside the battery fill and light while it sits in the empty area; light menu bars invert those colors automatically. When the line passes beneath the percentage, it softens to 65% opacity, and the percentage is masked above both the fill and marker so it always stays readable.
 
 ## Features
 
