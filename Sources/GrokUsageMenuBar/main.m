@@ -97,15 +97,6 @@ static NSTimeInterval const DefaultRefreshIntervalSeconds = 60.0;
     return GrokBatteryIcon(self.grokIcon, percent);
 }
 
-- (BOOL)usesDarkMenuBarAppearance {
-    NSAppearance *appearance = self.statusItem.button.effectiveAppearance ?: NSApp.effectiveAppearance;
-    NSAppearanceName match = [appearance bestMatchFromAppearancesWithNames:@[
-        NSAppearanceNameAqua,
-        NSAppearanceNameDarkAqua
-    ]];
-    return [match isEqualToString:NSAppearanceNameDarkAqua];
-}
-
 - (double)onPacePercentForState:(NSDictionary *)state now:(NSDate *)now {
     NSNumber *start = state[@"period_started_at"];
     NSNumber *reset = state[@"resets_at"];
@@ -125,8 +116,7 @@ static NSTimeInterval const DefaultRefreshIntervalSeconds = 60.0;
         self.grokIcon,
         percent,
         [NSString stringWithFormat:@"%.0f", MAX(0.0, MIN(100.0, percent))],
-        [self onPacePercentForState:state now:now],
-        [self usesDarkMenuBarAppearance]
+        [self onPacePercentForState:state now:now]
     );
 }
 
@@ -149,8 +139,7 @@ static NSTimeInterval const DefaultRefreshIntervalSeconds = 60.0;
         self.grokIcon,
         leftPercent,
         [NSString stringWithFormat:@"%.0f", MAX(0.0, MIN(100.0, leftPercent))],
-        onPacePercent,
-        YES
+        onPacePercent
     );
     NSString *countdown = [self countdownText:state] ?: @"--:--";
     NSImage *canvas = [[NSImage alloc] initWithSize:NSMakeSize(280.0, 44.0)];
@@ -158,7 +147,14 @@ static NSTimeInterval const DefaultRefreshIntervalSeconds = 60.0;
     [[NSColor colorWithCalibratedRed:0.075 green:0.235 blue:0.365 alpha:1.0] setFill];
     NSRectFill(NSMakeRect(0.0, 0.0, 280.0, 44.0));
 
-    [battery drawInRect:NSMakeRect(18.0, 13.0, 67.0, 18.0)];
+    NSImage *tintedBattery = [[NSImage alloc] initWithSize:battery.size];
+    [tintedBattery lockFocus];
+    [battery drawInRect:NSMakeRect(0.0, 0.0, battery.size.width, battery.size.height)];
+    [NSColor.whiteColor setFill];
+    NSRectFillUsingOperation(NSMakeRect(0.0, 0.0, battery.size.width, battery.size.height),
+                             NSCompositingOperationSourceAtop);
+    [tintedBattery unlockFocus];
+    [tintedBattery drawInRect:NSMakeRect(18.0, 13.0, 67.0, 18.0)];
 
     NSDictionary *attributes = @{
         NSFontAttributeName: [NSFont monospacedDigitSystemFontOfSize:18.0 weight:NSFontWeightSemibold],

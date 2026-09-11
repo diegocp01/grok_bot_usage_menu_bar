@@ -12,10 +12,6 @@ static CGFloat AlphaAt(NSBitmapImageRep *rep, NSInteger x, NSInteger y) {
     return [[rep colorAtX:x y:y] alphaComponent];
 }
 
-static NSColor *ColorAt(NSBitmapImageRep *rep, NSInteger x, NSInteger y) {
-    return [[rep colorAtX:x y:y] colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
-}
-
 static NSBitmapImageRep *BitmapForImage(NSImage *image) {
     CGImageRef cgImage = [image CGImageForProposedRect:NULL context:nil hints:nil];
     Assert(cgImage != NULL, @"renderer produces a bitmap image");
@@ -75,26 +71,23 @@ int main(void) {
         Assert(foundEmptySideGlyph,
                @"half battery keeps the label opaque over its empty side");
 
-        NSImage *paceLight = GrokBatteryIconWithOnPaceLine(nil, 50.0, @"", 25.0, NO);
-        NSImage *paceDark = GrokBatteryIconWithOnPaceLine(nil, 50.0, @"", 25.0, YES);
-        Assert(!paceLight.template && !paceDark.template,
-               @"colored pace batteries are not flattened into monochrome template images");
-        NSBitmapImageRep *paceLightRep = BitmapForImage(paceLight);
-        NSBitmapImageRep *paceDarkRep = BitmapForImage(paceDark);
-        NSInteger markerX = 35;
-        NSColor *lightMarker = ColorAt(paceLightRep, markerX, 9);
-        NSColor *darkMarker = ColorAt(paceDarkRep, markerX, 9);
-        Assert(lightMarker.greenComponent > lightMarker.redComponent,
-               @"light appearance retains the green pace marker");
-        Assert(darkMarker.greenComponent > darkMarker.redComponent,
-               @"dark appearance retains the green pace marker");
+        NSImage *paceInsideFill = GrokBatteryIconWithOnPaceLine(nil, 50.0, @"", 25.0);
+        NSImage *paceOutsideFill = GrokBatteryIconWithOnPaceLine(nil, 25.0, @"", 75.0);
+        Assert(paceInsideFill.template && paceOutsideFill.template,
+               @"pace battery remains a light/dark adaptive template image");
+        NSBitmapImageRep *paceInsideFillRep = BitmapForImage(paceInsideFill);
+        NSBitmapImageRep *paceOutsideFillRep = BitmapForImage(paceOutsideFill);
+        NSInteger markerX = 34;
+        Assert(AlphaAt(paceInsideFillRep, markerX, 9) < 0.05,
+               @"pace marker is a contrasting cutout inside the battery fill");
+        Assert(AlphaAt(paceOutsideFillRep, 50, 9) > 0.95,
+               @"pace marker uses the template tint outside the battery fill");
 
-        NSBitmapImageRep *opacityRep = BitmapForImage(
-            GrokBatteryIconWithOnPaceLine(nil, 0.0, @"", 50.0, NO));
-        NSColor *opacityMarker = ColorAt(opacityRep, 42, 9);
-        Assert(opacityMarker.alphaComponent >= 0.60 && opacityMarker.alphaComponent <= 0.70,
-               @"pace marker is approximately 65 percent opaque");
-        Assert(AlphaAt(opacityRep, 41, 9) < 0.05 && AlphaAt(opacityRep, 43, 9) < 0.05,
+        NSBitmapImageRep *widthRep = BitmapForImage(
+            GrokBatteryIconWithOnPaceLine(nil, 0.0, @"", 50.0));
+        Assert(AlphaAt(widthRep, 42, 9) > 0.95,
+               @"pace marker is visible outside the fill");
+        Assert(AlphaAt(widthRep, 41, 9) < 0.05 && AlphaAt(widthRep, 43, 9) < 0.05,
                @"pace marker is one pixel wide");
 
         NSImage *sampleIcon = [[NSImage alloc] initWithSize:NSMakeSize(18.0, 18.0)];
@@ -103,30 +96,30 @@ int main(void) {
         NSRectFill(NSMakeRect(2.0, 2.0, 14.0, 14.0));
         [sampleIcon unlockFocus];
         sampleIcon.template = YES;
-        NSBitmapImageRep *darkIconRep = BitmapForImage(
-            GrokBatteryIconWithOnPaceLine(sampleIcon, 50.0, @"", 25.0, YES));
-        NSColor *darkIconPixel = ColorAt(darkIconRep, 9, 9);
-        Assert(darkIconPixel.alphaComponent > 0.9 && darkIconPixel.redComponent > 0.9,
-               @"dark appearance retains and lightens the supplied template icon");
+        NSBitmapImageRep *iconRep = BitmapForImage(
+            GrokBatteryIconWithOnPaceLine(sampleIcon, 50.0, @"", 25.0));
+        Assert(AlphaAt(iconRep, 9, 9) > 0.9,
+               @"pace rendering retains the supplied template icon");
 
-        NSImage *labelOverPace = GrokBatteryIconWithOnPaceLine(nil, 50.0, @"1", 50.0, NO);
-        NSImage *paceWithoutLabel = GrokBatteryIconWithOnPaceLine(nil, 50.0, @"", 50.0, NO);
+        NSImage *labelOverPace = GrokBatteryIconWithOnPaceLine(nil, 0.0, @"1", 50.0);
+        NSImage *labelWithoutPace = GrokBatteryIconWithLabel(nil, 0.0, @"1");
         NSBitmapImageRep *labelOverPaceRep = BitmapForImage(labelOverPace);
-        NSBitmapImageRep *paceWithoutLabelRep = BitmapForImage(paceWithoutLabel);
-        BOOL foundMaskedMarkerPixel = NO;
-        for (NSInteger x = 41; x <= 44 && !foundMaskedMarkerPixel; x++) {
+        NSBitmapImageRep *labelWithoutPaceRep = BitmapForImage(labelWithoutPace);
+        BOOL foundLabelPixelAtMarker = NO;
+        for (NSInteger x = 40; x <= 45; x++) {
             for (NSInteger y = 5; y <= 12; y++) {
-                NSColor *withoutLabel = ColorAt(paceWithoutLabelRep, x, y);
-                NSColor *withLabel = ColorAt(labelOverPaceRep, x, y);
-                if (withoutLabel.greenComponent > withoutLabel.redComponent &&
-                    withLabel.alphaComponent + 0.1 < withoutLabel.alphaComponent) {
-                    foundMaskedMarkerPixel = YES;
-                    break;
+                CGFloat referenceAlpha = AlphaAt(labelWithoutPaceRep, x, y);
+                if (referenceAlpha > 0.1) {
+                    Assert(fabs(AlphaAt(labelOverPaceRep, x, y) - referenceAlpha) < 0.12,
+                           @"pace marker does not change percentage glyph pixels");
+                    if (x == 42) {
+                        foundLabelPixelAtMarker = YES;
+                    }
                 }
             }
         }
-        Assert(foundMaskedMarkerPixel,
-               @"percentage glyph masks the pace marker where they overlap");
+        Assert(foundLabelPixelAtMarker,
+               @"percentage glyph crosses and masks the pace marker");
         NSLog(@"BatteryRendererTests passed");
     }
     return 0;
