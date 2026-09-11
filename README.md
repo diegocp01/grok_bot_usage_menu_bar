@@ -3,16 +3,18 @@
 A tiny native macOS menu-bar app that shows how much of your weekly Cursor **Grok Bot** allowance remains and when it resets.
 
 <p>
-  <img src="assets/menu-bar-preview.png" alt="Grok Usage Menu Bar showing 93 percent left, a green on-pace marker, and a reset countdown" width="280">
+  <img src="assets/menu-bar-preview.png" alt="Grok Usage Menu Bar showing 86 percent left, a contrasting on-pace marker, and a reset countdown" width="280">
 </p>
 
 The default layout matches the companion Codex widget: a Grok icon, a battery showing usage left, and a live countdown to the weekly reset. It follows both light and dark menu-bar appearances.
 
-The subtle green line inside the battery is the **on-pace marker**. It shows how much quota would remain if usage were spread evenly across the selected window:
+The slim line inside the battery is the **on-pace marker**. It shows how much quota would remain if usage were spread evenly across the selected window:
 
 `on-pace % left = (time until reset / window duration) × 100`
 
-The app uses Cursor's real period start and reset timestamps—not an assumed seven-day duration—so the marker remains accurate for shortened or extended windows. If the battery fill ends to the right of the line, more quota remains than an even pace would predict. The marker appears only with **Show Battery** + **Show % Left**; the percentage is always drawn above it so the number stays readable.
+The app uses Cursor's real period start and reset timestamps—not an assumed seven-day duration—so the marker remains accurate for shortened or extended windows. If the battery fill ends to the right of the line, more quota remains than an even pace would predict. The marker appears only with **Show Battery** + **Show % Left**.
+
+The marker follows the same contrast rule as the percentage. On a dark menu bar it is a dark cutout while it sits inside the battery fill and light while it sits in the empty area; light menu bars invert those colors automatically. When the line passes beneath the percentage, it softens to 65% opacity, and the percentage is masked above both the fill and marker so it always stays readable.
 
 ## Features
 

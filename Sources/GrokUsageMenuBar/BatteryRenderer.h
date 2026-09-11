@@ -13,7 +13,6 @@ NSImage *GrokBatteryIconWithLabel(NSImage * _Nullable grokIcon,
 NSImage *GrokBatteryIconWithOnPaceLine(NSImage * _Nullable grokIcon,
                                       double percent,
                                       NSString *label,
-                                      double onPacePercent,
-                                      BOOL darkAppearance);
+                                      double onPacePercent);
 
 NS_ASSUME_NONNULL_END
