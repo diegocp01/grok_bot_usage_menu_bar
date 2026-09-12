@@ -21,7 +21,7 @@ The marker follows the same contrast rule as the percentage. On a dark menu bar 
 - Battery or percentage display
 - Percentage left or used
 - On-pace marker based on the selected window's actual duration
-- Live countdown or reset clock time
+- Live countdown or reset clock time, or **Hide Time** for a compact icon-and-battery item
 - Refresh every 30 seconds, 1 minute, 3 minutes, or 5 minutes
 - One-click access to the Cursor dashboard
 - Universal Apple Silicon and Intel build

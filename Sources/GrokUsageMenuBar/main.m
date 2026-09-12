@@ -12,6 +12,7 @@ static NSString * const DisplayModeBattery = @"battery";
 static NSString * const TimeModeKey = @"timeMode";
 static NSString * const TimeModeClock = @"clock";
 static NSString * const TimeModeCountdown = @"countdown";
+static NSString * const TimeModeHidden = @"hidden";
 static NSString * const MetricModeKey = @"metricMode";
 static NSString * const MetricModeLeft = @"left";
 static NSString * const MetricModeUsed = @"used";
@@ -229,6 +230,8 @@ static NSTimeInterval const DefaultRefreshIntervalSeconds = 60.0;
              active:[[self timeMode] isEqualToString:TimeModeCountdown] menu:menu];
     [self addChoice:@"Show Reset Time" selector:@selector(useClockTime)
              active:[[self timeMode] isEqualToString:TimeModeClock] menu:menu];
+    [self addChoice:@"Hide Time" selector:@selector(useHiddenTime)
+             active:[[self timeMode] isEqualToString:TimeModeHidden] menu:menu];
 
     [menu addItem:NSMenuItem.separatorItem];
     [self addRefreshIntervalSubmenu:menu];
@@ -293,6 +296,7 @@ static NSTimeInterval const DefaultRefreshIntervalSeconds = 60.0;
     NSDictionary *state = self.latestState;
     if (![state[@"ok"] boolValue]) {
         self.statusItem.button.image = self.grokIcon;
+        self.statusItem.button.imagePosition = NSImageLeft;
         self.statusItem.button.title = @" --:--";
         return;
     }
@@ -300,6 +304,7 @@ static NSTimeInterval const DefaultRefreshIntervalSeconds = 60.0;
     double metric = [[self metricMode] isEqualToString:MetricModeUsed]
         ? [state[@"used_percent"] doubleValue]
         : [state[@"left_percent"] doubleValue];
+    BOOL hideTime = [[self timeMode] isEqualToString:TimeModeHidden];
     NSString *time = [[self timeMode] isEqualToString:TimeModeCountdown]
         ? [self countdownText:state]
         : [self resetClockText:state];
@@ -313,11 +318,16 @@ static NSTimeInterval const DefaultRefreshIntervalSeconds = 60.0;
         } else {
             self.statusItem.button.image = [self batteryIconForPercent:metric];
         }
-        self.statusItem.button.title = [@" " stringByAppendingString:time];
+        // With the time hidden the battery already carries the percentage, so show the image alone.
+        self.statusItem.button.imagePosition = hideTime ? NSImageOnly : NSImageLeft;
+        self.statusItem.button.title = hideTime ? @"" : [@" " stringByAppendingString:time];
     } else {
         self.statusItem.button.image = self.grokIcon;
+        self.statusItem.button.imagePosition = NSImageLeft;
         NSString *suffix = [[self metricMode] isEqualToString:MetricModeUsed] ? @" used" : @" left";
-        self.statusItem.button.title = [NSString stringWithFormat:@" %@ | %.0f%%%@", time, metric, suffix];
+        self.statusItem.button.title = hideTime
+            ? [NSString stringWithFormat:@" %.0f%%%@", metric, suffix]
+            : [NSString stringWithFormat:@" %@ | %.0f%%%@", time, metric, suffix];
     }
 }
 
@@ -560,6 +570,11 @@ static NSTimeInterval const DefaultRefreshIntervalSeconds = 60.0;
 
 - (void)useClockTime {
     [NSUserDefaults.standardUserDefaults setObject:TimeModeClock forKey:TimeModeKey];
+    [self updateStatusItem];
+}
+
+- (void)useHiddenTime {
+    [NSUserDefaults.standardUserDefaults setObject:TimeModeHidden forKey:TimeModeKey];
     [self updateStatusItem];
 }
 
