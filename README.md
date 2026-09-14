@@ -24,6 +24,7 @@ The marker follows the same contrast rule as the percentage. On a dark menu bar 
 - Live countdown or reset clock time, or **Hide Time** for a compact icon-and-battery item
 - Refresh every 30 seconds, 1 minute, 3 minutes, or 5 minutes
 - One-click access to the Cursor dashboard
+- Check for updates from GitHub `main`, then pull, rebuild, and restart after confirmation
 - Universal Apple Silicon and Intel build
 - No third-party runtime or package dependencies
 
