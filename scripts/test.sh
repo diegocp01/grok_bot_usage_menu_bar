@@ -26,3 +26,5 @@ env CLANG_MODULE_CACHE_PATH="$ROOT_DIR/.build/module-cache" \
   -o "$TEST_DIR/BatteryRendererTests"
 
 "$TEST_DIR/BatteryRendererTests"
+
+"$ROOT_DIR/scripts/test-updater.sh"
